@@ -1,0 +1,20 @@
+[submodule "Project"]
+	path = Project
+	url = ./
+	branch = Project
+[submodule "Sketches"]
+	path = Sketches
+	url = ./
+	branch = Sketches
+[submodule "Attic-1"]
+	path = Attic/attic-1
+	url = ./
+	branch = attic-1
+[submodule "Historic-1"]
+	path = Attic/historic-1
+	url = ./
+	branch = historic-1
+[submodule "Release"]
+	path = Release
+	url = ./
+	branch = master

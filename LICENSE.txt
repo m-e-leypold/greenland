@@ -1,0 +1,82 @@
+LICENSING TERMS for: Greenland -- A Pythonic Scripting Infrastructure
+=====================================================================
+
+TL;DR
+-----
+
+- Most of Greenland is free Software (GPL3). See file GPL3.txt.
+
+- Some files are licenses under a MIT style license. See file
+  MIT-LICENSE.txt. Those files are listet below in section "Some Files
+  are licensed MIT style".
+
+Details
+-------
+
+### Most of Greenland is free Software (GPL3)
+
+Most of Greenland is free software. Specifically everything not in the
+subdirectory 'shrubbery/', and those files in shrubbery that have not
+MIT style license header or are not mentioned in the next section
+"Some Files are licensed MIT style".
+
+You can redistribute it and/or modify it under the terms of the GNU
+General Public License as published by the Free Software Foundation;
+either version 2 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+02110-1301 USA.
+
+See the file GPL3.txt for the GPL licensing terms.
+ 
+### Some Files are licensed MIT style
+
+Some files are licenses with a MIT Style license. Those are only files
+in the sub directory 'shrubbery/' and only those either in the
+following list or having a MIT style license header.
+
+(Ideally they occur in the list and have a MIT style license header,
+but not to incur any doubt: One of those conditions is enough).
+
+The following files are license as licensed under MIT style licensing
+terms as laid out in MIT-LICENSE.txt:
+
+- shrubbery/samplemodule.py 
+- shrubbery/samplemodule.test
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of these files and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Except as contained in this notice, the name(s) of the above
+copyright holders shall not be used in advertising or otherwise to
+promote the sale, use or other dealings in this Software without
+prior written authorization.
+
+# (Emacs)
+	Local Variables:
+	mode: markdown
+	End:

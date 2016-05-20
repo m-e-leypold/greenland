@@ -1,0 +1,10 @@
+*~
+/.virtualenv
+/.virtualenv.UPDATED
+/.prep.DONE
+/sampleproject
+*~OLD
+*.egg-info
+__pycache__
+/BAK
+/CM

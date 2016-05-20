@@ -1,0 +1,88 @@
+#
+#   Greenland: shrubbery/samplemodule.test
+#
+#   Copyright (c) 2015,2016  M E Leypold.
+#
+#   This file is under MIT style license as follows:
+#
+#   Permission is hereby granted, free of charge, to any person
+#   obtaining a copy of this software and associated documentation
+#   files (the "Software"), to deal in the Software without
+#   restriction, including without limitation the rights to use, copy,
+#   modify, merge, publish, distribute, sublicense, and/or sell copies
+#   of the Software, and to permit persons to whom the Software is
+#   furnished to do so, subject to the following conditions:
+#
+#   The above copyright notice and this permission notice shall be
+#   included in all copies or substantial portions of the Software.
+#
+#   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+#   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+#   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+#   NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+#   HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+#   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+#   DEALINGS IN THE SOFTWARE.
+#
+#   Except as contained in this notice, the name(s) of the above
+#   copyright holders shall not be used in advertising or otherwise to
+#   promote the sale, use or other dealings in this Software without
+#   prior written authorization.
+
+"""Demonstrates the general structure of greenland tests.
+
+    Every test suite is a python program, to which belongs one
+    specific module, of which it tests functionality. This specific
+    module is called a "module under test". At the beginning of a test
+    suite one must indicate the module under test by one of the
+    following:
+
+    - import module under test named as MUT or M
+    - import module under test as only module before importing
+      greenland testing.
+
+    Then one must import greenland.testing. It is suggested to
+    actually *-import, since this keeps the names short and
+    readable. All internal functions in greenland.testing are
+    privately named, only TestCase and execute_tests are exported. (as
+    of the time of this writing).
+
+    TestCase is derived from unittest.TestCase. One can use it to
+    define tests (that should not come as a surprise).
+
+    As last line in the test suite, one needs to place
+
+       if __name__ == '__main__': execute_tests()
+
+    This will run the unit tests and the doctests of the module under
+    test.
+
+    The doc string of the test suite should be used to document the
+    test suite.
+
+"""
+ 
+import shrubbery.samplemodule as MUT
+from   greenland.testing import *
+
+class DummyTest(TestCase):    
+    def test_constants(test):
+        test.assertTrue  (MUT.t)
+        test.assertFalse (MUT.f)
+
+    def test_inversion(test):
+        test.assertEqual ( MUT.opposite(True),  False )
+        test.assertEqual ( MUT.opposite(False), True  )
+
+
+class DummyTest2(TestCase):    
+    def test_constants(test):
+        test.assertTrue  (MUT.t)
+        test.assertFalse (MUT.f)
+
+    def test_inversion(test):
+        test.assertEqual ( MUT.opposite(True),  False )
+        test.assertEqual ( MUT.opposite(False), True  )
+        
+if __name__ == '__main__': execute_tests()

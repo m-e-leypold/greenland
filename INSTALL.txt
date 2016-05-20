@@ -1,0 +1,46 @@
+
+# How to install Greenland
+
+
+- Use the following invocation to install into your python environment:
+
+    pip install .
+
+- Use the following invocation to install locally:
+
+    make dev-install
+
+  This will create a virtual environment and a "live" installation of
+  Greenland. The environment can be pulled into your shell with
+
+    . ./env.sh
+
+  ( You're on your own if you use a shell that is not Bourne Shell
+    compatible. The author of these lines doesn't feel the urge to
+    support abominations like the c-shellor any of its spawn.)
+
+  Quite probably this will not work at once: The author has not
+  invested much in dependency management yet.
+
+
+# ---- LICENSE ----
+
+Greenland -- a Python based scripting environment.
+Copyright (C) 2015,2016  M E Leypold.
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation; either version 2 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+02110-1301 USA.
+
+
