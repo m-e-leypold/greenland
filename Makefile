@@ -104,5 +104,8 @@ wheel:
 	pip wheel .
 
 
+setup::
+	git update --init Project
+
 -include Project/Project.mk
 

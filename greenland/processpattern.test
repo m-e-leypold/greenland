@@ -1,0 +1,136 @@
+#   -*- mode: python -*-
+#
+#   Greenland -- a Python based scripting environment.
+#   Copyright (C) 2015,2016  M E Leypold.
+#
+#   This program is free software; you can redistribute it and/or
+#   modify it under the terms of the GNU General Public License as
+#   published by the Free Software Foundation; either version 2 of the
+#   License, or (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#   General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+#   02110-1301 USA.
+ 
+import greenland.processpattern as MUT
+from   greenland.testing import *
+
+PP = MUT
+
+import greenland.processpattern
+
+# ----------------------------------------------
+
+class Status ( PP.Status ):
+    def __init__( self, proc, prg, code = None, signal = None ):
+        super().__init__( proc, prg )
+        self.code   = code
+        self.signal = signal
+
+    @property
+    def killed (self):
+        return not ( self.signal == None or self.signal == 0 )
+
+class Process ( PP.Process ):
+    def __init__(self,prg):
+        super().__init__(prg)
+
+    def start (self):
+        PP.Process.start( self )
+
+    def wait  (self):
+        self.status = self.Status( self.prg.exit_code, self.prg.signal )
+        return PP.Process.wait( self )
+
+    def get_result ( self ): return 137
+
+class ProgramBase ( PP.Program ):
+
+    StatusType = Status
+    exit_code  = 0
+    signal     = 0
+    
+    def __init__(self):
+        super().__init__()
+        
+    ProcessType = Process
+
+    def has_failed   ( self, st ): return not (st.code == 0 and st.signal == 0)
+
+class Top ( ProgramBase ):
+    pass
+
+class Bottom ( ProgramBase ):
+    exit_code = 1
+
+class Killed ( ProgramBase ):
+    signal = 9 
+    
+
+# ----------------------------------------------
+    
+class BasicTest(TestCase):
+    
+
+    def check_run_state ( test, proc ):
+        test.expect( proc.executing )
+        test.expect( not proc.finished )
+        test.expect( proc.status, None )
+
+    def check_post_wait( test, proc ):        
+        test.expect( not proc.executing )
+        test.expect( proc.finished )
+        test.expect( proc.status )
+        test.expect( (proc.failed or proc.succeeded) )
+        test.expect( (proc.failed or (not proc.killed )))
+        
+
+    def run_program_checked( test, Prg ):
+        prg     = Prg()
+        proc    = test.proc = prg.start()
+        test.check_run_state( proc )
+        result  = proc.wait()
+        test.check_post_wait( proc )
+        return result, proc
+    
+    def test_basic_execution(test):
+
+        result, proc = test.run_program_checked( Top )
+                     
+        test.expect( not (proc.killed) )
+        test.expect( not proc.failed )    
+        test.expect( result, 137 )
+
+    def test_failure( test ):
+        
+        test.assertRaises(
+            greenland.processpattern.ProcessFailed,
+            test.run_program_checked, Bottom
+        )
+        
+        proc = test.proc
+
+        test.expect( proc.failed )
+        test.expect( not (proc.killed ) )
+        test.expect( proc.result, None )
+
+    def test_killed( test ):
+        
+        test.assertRaises(
+            greenland.processpattern.ProcessGotKilled,
+            test.run_program_checked, Killed
+        )
+
+        proc = test.proc
+
+        test.expect( proc.failed  )
+        test.expect( proc.killed  )
+        test.expect( proc.result, None )
+
+if __name__ == '__main__': execute_tests()

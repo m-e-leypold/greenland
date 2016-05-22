@@ -1,3 +1,4 @@
+#   -*- mode: python -*-
 #
 #   Greenland: shrubbery/samplemodule.test
 #
@@ -68,10 +69,16 @@ from   greenland.testing import *
 
 class DummyTest(TestCase):    
     def test_constants(test):
+
+        test.expect( MUT.t )
+        
         test.assertTrue  (MUT.t)
         test.assertFalse (MUT.f)
 
     def test_inversion(test):
+
+        test.expect( MUT.opposite(True), False )
+        
         test.assertEqual ( MUT.opposite(True),  False )
         test.assertEqual ( MUT.opposite(False), True  )
 

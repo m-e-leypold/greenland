@@ -23,8 +23,17 @@
 import sys
 import unittest
 
-class TestCase (unittest.TestCase): pass
+__none__ = object()
 
+class TestCase (unittest.TestCase):
+    def expect( test, a, b = __none__ ):
+        if b == __none__:
+            test.assertTrue(a)
+        else:
+            test.assertEquals(a,b)
+
+        
+            
 class ModuleUnderTestNotUnique(Exception): pass
 class ModuleUnderTestNotFound(Exception):  pass
 
