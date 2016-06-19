@@ -1,0 +1,165 @@
+#   -*- mode: python -*-
+
+import greenland.shellsugar_dsl as DSL
+MUT  = DSL
+
+from   greenland.testing import *
+
+import pdb
+from copy import copy
+
+
+MyTemplate = DSL.Template
+
+data = {
+    '[-foo ...]'  : '-foo 1',
+    '[-foo bar]'  : '-foo 2',
+    '[--foo=bar]' : '--foo=3',
+    '[--foo=...]' : '--foo=4',
+    
+    '[--foo]'     : '_5_',
+    '[--foo:bar]' : '_6_',    
+    '[-foo]'      : '_7_',
+    '[-foo:bar]'  : '_8_'
+}
+
+class BasicTest(TestCase):
+
+
+    # Should go to testing RSN
+    #
+    def by_table ( test, do, *table ):
+        for line in table:
+            do(*line)
+    
+    def subst_expect( test, t, e ):
+        test.expect( MyTemplate(t).substitute(data), e )
+
+    def test_fields_parsing(test):    # test field parsing
+
+        test.subst_expect( "{ [--foo] }",      "{ _5_ }" )
+        test.subst_expect( "{ [--foo:bar] }",  "{ _6_ }" )
+
+        test.subst_expect( "{ [-foo] }",       "{ _7_ }" )
+        test.subst_expect( "{ [-foo:bar] }",   "{ _8_ }" )        
+        
+        test.subst_expect( "{ [-foo ...] }",   "{ -foo 1 }" )
+        test.subst_expect( "{ [-foo bar] }",   "{ -foo 2 }" )
+        test.subst_expect( "{ [--foo=bar] }",  "{ --foo=3 }" )
+        test.subst_expect( "{ [--foo=...] }",  "{ --foo=4 }" )
+
+    def test_formatting ( test ):
+
+        test.expect( DSL.format( "te'st" ), "'te'\"'\"'st'" )
+        test.expect( DSL.format( 5.5 ), 	"'5.5'" ) 
+        test.expect( DSL.format( ["a","b","c" ] ), "'a' 'b' 'c'" )
+        test.expect( DSL.format_item( 	["a","b","c" ] ), "'['\"'\"'a'\"'\"', '\"'\"'b'\"'\"', '\"'\"'c'\"'\"']'" )
+        
+    def translator_result ( test, Translator, construction_args, args, expected ):
+        args2 = copy(args)
+        translator = Translator(*construction_args)
+        test.expect ( expected, translator.get(**args2) )
+        args2["dummy"] = "DUMMY"
+        test.expect ( expected, translator.get(**args2) )
+        
+    def test_translators ( test ):
+
+        Field  = DSL.FieldArgument
+        List   = DSL.ListArgument
+        Flag   = DSL.FlagArgument
+        Option = DSL.OptionArgument        
+        
+        table = [
+            
+            
+            # translator | constr args		| with args			| expands to
+            # --------------------------------------------------------------------------------------------------
+            
+            [ Field      , ('foo',True)		, { 'foo': 'baz' }		, "'baz'"					 ],
+            [ Field      , ('foo',True)		, { }  				, ""              				 ],
+            [ Field	 , ('foo',True)		, { 'foo': ['alpha','beta'] }	, "'['\"'\"'alpha'\"'\"', '\"'\"'beta'\"'\"']'"  ],
+            
+            [ Flag       , ("--",'foo')         , { 'foo': True  }              , "--foo" 					 ],
+            [ Flag       , ("--",'foo')         , { 'foo': None  }              , ""						 ],
+            [ Flag       , ("--",'foo')         , { 'foo': False }              , ""						 ],
+            [ Flag       , ("--",'foo')         , { }			        , ""						 ],
+        ]
+
+        test.by_table ( test.translator_result, *table )
+        
+    def test_translators_old ( test ):
+        
+        test.expect( DSL.MissingArgument,
+                     DSL.FieldArgument('no',False) .get, foo = "baz", dummy = "never" )
+        
+        test.expect( DSL.ListArgument  ('foo',True) .get( foo = ['alpha','beta'], dummy = "never" ), "'alpha' 'beta'" )
+        test.expect( DSL.ListArgument  ('foo',True) .get( foo = ['alpha'], dummy = "never" )       , "'alpha'" )
+        test.expect( DSL.ListArgument  ('foo',True) .get( foo = [], dummy = "never" )              , "" )
+
+        test.expect( DSL.MissingArgument,
+                     DSL.ListArgument  ('foo',False).get, foo = [], dummy = "never" )
+
+        test.expect( DSL.OptionArgument ("--",'foo',"=") .get( foo = 42,     dummy = "never" ), "--foo='42'" )
+        test.expect( DSL.OptionArgument ("--",'foo',"=") .get(                dummy = "never" ), "" )
+        test.expect( DSL.OptionArgument ("-",'foo'," ")  .get( foo = "baz",   dummy = "never" ), "-foo 'baz'" )
+        test.expect( DSL.OptionArgument ("-",'foo'," ")  .get( foo = "ba'az", dummy = "never" ), "-foo 'ba'\"'\"'az'" )         
+
+    def template_expansion( test, template, expected, args ):
+        args2 = copy(args)
+        test.expect( MyTemplate (template) .expand( ** args ) ,  expected )        
+        args2['dummy' ] = 'DUMMY' 
+        test.expect( expected, MyTemplate (template) .expand( ** args ) )
+
+    def template_exceptions( test, template, exn, args ):
+        args2 = copy(args)
+        expand = MyTemplate (template) .expand                
+        test.expect( exn, expand, ** args )
+        args2['dummy' ] = 'DUMMY'
+        test.expect( exn, expand, ** args )
+
+
+    def test_expansion_1 ( test ):
+        
+        table = [
+
+            # template     		| expands to  		| with arguments
+            # ------------------------------------------------------------------
+
+            [ "cmd [--flag]"		, "cmd --flag"		, { 'flag': True  }	],
+            [ "cmd [--flag]"		, "cmd "      		, { 'flag': False } 	],
+            [ "cmd [--flag]"		, "cmd "      		, {}                	],
+            [ "cmd [--some=some_arg]" 	, "cmd --some='ARG'"	, { 'some_arg': 'ARG' } ],
+            [ "cmd [--some=...]"     	, "cmd --some='ARG'"	, { 'some': 'ARG' } 	],
+            [ "cmd [--some=...]"       	, "cmd "            	, {}                    ]
+        ]
+        test.by_table ( test.template_expansion, *table )
+
+    # A template covering all permissible syntax and its expansions
+        
+    template_text_1 = """ Test text for shell-sugar templates:
+
+        A single (optional)   word  =>   [optword].
+        A single nonoptional  word  =>   <noword>.
+        
+        Flags                       =>   [-v], [--verbose].
+        Flags with keys != label    =>   [-d:debug], [--landscape:quer].
+        
+        An optional list            =>   [list ...].
+        A nonoptional list          =>   <list ...>.
+        
+        Options                     =>   [-g ...], [-geometry ...], [--gnu=...].
+        Options with keys != labels =>   [-x extend], [-extend must_extend], [--extender=xtendr].    
+        
+        """
+
+    def test_expansion_2 ( test ):
+
+        tpl = MyTemplate( test.template_text_1 )
+
+        # TODO: Complete here
+
+    
+if __name__ == '__main__': execute_tests()
+
+
+ 

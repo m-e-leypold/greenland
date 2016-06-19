@@ -1,0 +1,52 @@
+#   -*- mode: python -*-
+
+
+import greenland.shellsugar as MUT
+from   greenland.testing    import *
+
+from   greenland.shellsugar     import *
+from   greenland.processpattern import ProcessFailed, ProcessGotKilled
+            
+
+import tempfile
+import os
+
+def touch(*paths):
+    for path in paths:
+        open(path,"wb").close()
+
+class ShellSugarTest(TestCase):
+
+    def test_basics(test):
+        
+        with tempfile.TemporaryDirectory() as testdir:
+            
+            t1 = os.path.join(testdir,"t1")
+            t2 = os.path.join(testdir,"t2")
+            t3 = os.path.join(testdir,"t3")
+            touch(t1)
+            assert os.path.exists(t1)
+
+            ls = sh( "ls -1 [dir]",returns = STDOUT )
+            rm = sh( "rm [file]" )
+            
+            test.expect( ['t1\n'], ls( dir = testdir ) )
+            test.expect( None, rm( file=t1 ))
+            test.expect( not os.path.exists(t1) )
+
+            touch(t1,t2,t3)
+
+            p = lambda lines : [ l.rstrip() for l in lines ]
+            ls = sh( "ls -1 [dir]", parse = p )
+            test.expect( ['t1','t2','t3'], ls( dir = testdir ) )
+
+            ex = sh("exit [code]", ignore_exits = [ 3,4,5 ] )
+            
+            test.expect( None, ex(code=3) )
+            test.expect( ProcessFailed, ex, code=1 )
+
+            kl = sh('kill $$')
+            
+            test.expect( ProcessGotKilled, kl, )            
+            
+if __name__ == '__main__': execute_tests()

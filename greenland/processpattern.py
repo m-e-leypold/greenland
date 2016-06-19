@@ -17,16 +17,37 @@
 #   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 #   02110-1301 USA.
 
+"""Defines the interface for a process pattern.
+"""
+
 from abc import abstractmethod, ABCMeta
 
 class ProcessError(Exception):
-    pass
+    def __init__(self,process):
+        self.process = process
+    
+    """This is the base class for errors occuring during process execution."""
 
 class ProcessFailed( ProcessError ):
-    pass
+    """This error is raised if a process fails and indicates that failure.
 
+    Meaning: We assume, every process has a way to return information
+    if succeeded or failed to perform its task. Think: Process exist
+    codes in ANSI C or Unix. But note, that we make no specific
+    assumptions about the exact mechanism in
+    greenland.processpattern. Specific knowledge about the way process
+    status is communicated back to the caller is left to the specific
+    implementation of the processpattern.
+    """
+
+    def __str__( self ):
+        return "Process {P} failed: {X}.".format(P=str(self.process), X=str(self.process.status))
+    
 class ProcessGotKilled( ProcessError ):
-    pass
+
+    def __str__( self ):
+        return "Process {P} got killed: {X}.".format(P=str(self.process), X=str(self.process.status))
+
 
 class Status (object, metaclass=ABCMeta):
 
@@ -57,8 +78,8 @@ class Program ( object, metaclass=ABCMeta ):
         return self.StatusType( proc, self, *pargs, **kwargs )       
     
     @abstractmethod
-    def __init__( self, *pargs, **kwargs ):
-        super().__init__( *pargs, **kwargs )
+    def __init__( self ):
+        object.__init__(self)
     
     @property
     @abstractmethod
@@ -69,10 +90,13 @@ class Program ( object, metaclass=ABCMeta ):
         proc.start()
         return proc
 
-    def run   ( my, *pargs, **kwargs ):
-        proc   = my.start( *pargs, *kwargs )
-        result = proc.run()
+    def run ( my, *pargs, **kwargs ):
+        proc   = my.start( *pargs, **kwargs )
+        result = proc.wait()
         return result
+
+    def __call__ ( self, *pargs, **kwargs ):
+        return self.run(*pargs,**kwargs)
 
     @abstractmethod
     def has_failed    ( self, st ): pass
@@ -83,14 +107,17 @@ class Process (object, metaclass=ABCMeta):
 
     def __init__( my, prg, *pargs, **kwargs ):
         
-        super().__init__( *pargs, **kwargs )
-        my.prg    =  prg        
+        object.__init__(my)
+        my.args      = (pargs,kwargs)        
+        my.prg       =  prg        
         my.status    = None
         my.finished  = None
         my.executing = False
         my.result    = None
         
-    def run(my):   my.start(); return my.wait()
+    def run(my):
+        my.start()
+        return my.wait()
     
     @abstractmethod
     def start(my):

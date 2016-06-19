@@ -1,0 +1,34 @@
+#   -*- mode: python -*-
+
+import greenland.shellprocedures as sp
+MUT = sp
+from   greenland.testing import *
+
+import greenland.processpattern as pp
+
+class ShellProcedure ( MUT.ShellProgram ):
+    
+    def __init__( self, script, returns = None ):
+        super().__init__( returns = returns )
+        self.script = script
+
+    def expand_template( self, *pargs, **kwargs ):
+        return self.script
+    
+class Tests(TestCase):
+    def test_basics(test):
+        
+        p = ShellProcedure("echo '-- hello'")
+        p()
+
+        p = ShellProcedure("kill $$")
+        test.expect( pp.ProcessGotKilled, p )
+        
+        p = ShellProcedure("exit 1")
+        test.expect( pp.ProcessFailed, p )
+
+
+        p = ShellProcedure("echo hello", returns = sp.STDOUT )
+        test.expect( p(), [ "hello\n" ] )
+        
+if __name__ == '__main__': execute_tests()

@@ -43,10 +43,14 @@ HELP-TEXT-IN = Makefile
 default:
 	@awk  '/-- HELP/{s=1}(s){s++}/-- END HELP/{s=0}(s>=3){print}' "$(HELP-TEXT-IN)" | sed 's|^#||;s|^  ||'
 
-PYTHON-MODULES = \
-	greenland.errors greenland.argparsing greenland.shellscripting greenland.externalprocedures
+# PYTHON-MODULES = \
+#	greenland.errors greenland.argparsing greenland.shellscripting greenland.externalprocedures
 
 PYUNIT-EXTERNAL-TESTS = $(wildcard */*.test)
+PYTHON-MODULES        = $(wildcard */*.py)
+
+stats:
+	@echo "PYUNIT-EXTERNAL-TESTS => $(PYUNIT-EXTERNAL-TESTS)"
 
 prep: virtualenv dev-install
 	touch ".$@.DONE"
@@ -87,7 +91,10 @@ clean::
 
 cleaner: distclean
 
-check: $(PYUNIT-EXTERNAL-TESTS:%.test=test[%]) # $(PYTHON-MODULES:%=check[%])
+
+check:   $(PYUNIT-EXTERNAL-TESTS:%.test=test[%]) # $(PYTHON-MODULES:%=check[%])
+rcheck:  check check-todos # release check
+
 
 $(PYTHON-MODULES:%=check[%]): check[%]: 
 	@$(VIRTUALENV); XXX python -c 'import $*; import greenland.selftest; greenland.selftest.run($*)'
@@ -97,8 +104,10 @@ $(PYUNIT-EXTERNAL-TESTS:%.test=test[%]): test[%]:
 
 check2: $(PYTHON-MODULES:%=check2[%])
 
-check2[%]:
-	$(subst .,/,$*).py
+check2[%]:$(subst .,/,$*).py
+
+check-todos:
+	! grep -n XXX $(PYTHON-MODULES) $(PYUNIT-EXTERNAL-TESTS) 
 
 wheel:
 	pip wheel .
@@ -106,6 +115,7 @@ wheel:
 
 setup::
 	git update --init Project
+
 
 -include Project/Project.mk
 

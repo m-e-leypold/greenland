@@ -19,6 +19,35 @@
 
 #   TODO: output to stderr (Requires using DocTestRunner)
 
+"""Some regression testing tools.
+
+    greenland.testing extends unittest.TestCase with a "polymorphic"
+    test assertion 'expect'. There are 3 way to use it:
+
+    - test.expect ( some_bool )
+    - test.expect ( some_value, other_value )
+    - test.expect ( exception_class, callable, arguments ... )
+
+    Note: The testsuite must live in __main__, currently.
+
+    How to create a test suite:
+
+        import some_module as MUT
+        from greenland.testing import *
+
+        class MyTests ( TestCase ):
+              ...
+
+        if __name__ == '__main__': execute_tests()
+
+
+    Unfortunately while using greenland.testing, I've come to the
+    conclusion that I don't find unittest flexible enough. So this
+    module must already judged as deprecated. I'll either write a
+    standalone module based on a slightly different philosophy or use
+    'nose'.
+
+"""
 
 import sys
 import unittest
@@ -26,11 +55,16 @@ import unittest
 __none__ = object()
 
 class TestCase (unittest.TestCase):
-    def expect( test, a, b = __none__ ):
+    def expect( test, a, b = __none__,*pargs,**kwargs):
         if b == __none__:
             test.assertTrue(a)
         else:
-            test.assertEquals(a,b)
+            if type(a) == type and issubclass(a,Exception):
+                test.assertRaises(a,b,*pargs,**kwargs)
+            else:
+                assert pargs  == ()
+                assert kwargs == {}
+                test.assertEquals(a,b)
 
         
             
