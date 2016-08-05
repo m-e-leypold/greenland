@@ -1,4 +1,3 @@
-#
 #   Greenland -- a Python based scripting environment.
 #   Copyright (C) 2015,2016  M E Leypold.
 #
@@ -17,21 +16,15 @@
 #   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 #   02110-1301 USA.
 
-import greenland.shellprocedures as SP
-import greenland.shellsugar_dsl  as DSL
+import greenland.profile as MUT
+from   greenland.testing import *
 
-class ShellProgram ( SP.ShellProgram ):
+from greenland.profile import properties
 
-    def __init__( self, template, **kwargs ):
-        super().__init__ ( **kwargs )
-        self.template = DSL.Template( template )
+class ProfileTest(TestCase):    
+    def test_basics(test):
+        (__verbose,__tracing,__checking) = properties.root.get_vtc_flags()
+        test.expect( bool, type(__verbose) )
         
-    def expand_template( self, *pargs, **kwargs ):
-        return self.template.expand(**kwargs)
-    
-STDOUT    = SP.STDOUT
-EXITCODE  = SP.EXITCODE
+if __name__ == '__main__': execute_tests()
 
-sh = ShellProgram
-        
-    

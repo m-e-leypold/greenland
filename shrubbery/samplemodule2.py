@@ -17,21 +17,15 @@
 #   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 #   02110-1301 USA.
 
-import greenland.shellprocedures as SP
-import greenland.shellsugar_dsl  as DSL
+""" Samplemodule 2 for Greenland """
 
-class ShellProgram ( SP.ShellProgram ):
+def square(x):
+    return x*x
 
-    def __init__( self, template, **kwargs ):
-        super().__init__ ( **kwargs )
-        self.template = DSL.Template( template )
-        
-    def expand_template( self, *pargs, **kwargs ):
-        return self.template.expand(**kwargs)
-    
-STDOUT    = SP.STDOUT
-EXITCODE  = SP.EXITCODE
+class SomeError(Exception):
+    pass
 
-sh = ShellProgram
-        
-    
+def raise_error(msg):
+    raise SomeError(msg)
+
+

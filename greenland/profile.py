@@ -17,21 +17,25 @@
 #   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 #   02110-1301 USA.
 
-import greenland.shellprocedures as SP
-import greenland.shellsugar_dsl  as DSL
+"""A minimal program profile implementation.
 
-class ShellProgram ( SP.ShellProgram ):
+(Will have to be improved some time later).
+"""
 
-    def __init__( self, template, **kwargs ):
-        super().__init__ ( **kwargs )
-        self.template = DSL.Template( template )
-        
-    def expand_template( self, *pargs, **kwargs ):
-        return self.template.expand(**kwargs)
+class __PropertyTree__( object ):
+    def __init__( self, parent = None ):
+        self.parent   = parent
+        self.verbose  = True
+        self.tracing  = True
+        self.checking = True
+
+    def get_vtc_flags ( self ):
+        return ( self.verbose, self.tracing, self.checking )
     
-STDOUT    = SP.STDOUT
-EXITCODE  = SP.EXITCODE
+class __Properties__(object):
+    def __init__(self):
+        self.root = __PropertyTree__()
 
-sh = ShellProgram
-        
-    
+properties = __Properties__()
+
+
