@@ -140,7 +140,7 @@ class TestFailed( Exception ):
             SOURCE   = self.line
         )
 
-    
+      
 class UnexpectedException ( TestFailed ):
 
     r""" Will be raised when an exception escapes the test (that is, an
@@ -155,7 +155,7 @@ class UnexpectedException ( TestFailed ):
         self.expected  = expected
 
     def message(self):
-        return "got {RESULT} but expecting {EXPECTED}".format(
+        return "{RESULT} raised but expecting {EXPECTED}".format(
             EXPECTED = repr(self.expected),
             RESULT   = repr(self.exception)
         )
@@ -179,6 +179,40 @@ class UnexpectedResult ( TestFailed ):
             RESULT   = repr(self.result)
         )
 
+
+class UncaughtException ( UnexpectedException ):
+
+    # TODO/NOTE: This is only a wrapper around the uncaught exception
+    # (to record the cause of failure), but will not be raised
+    # itself. Currently is an exception, but strictly should not be.
+
+    def __init__( self, test, exception, expected = None, frame_index = -1 ):
+        super().__init__(test, frame_index-1)
+        self.exception = exception
+        self.expected  = expected
+
+        # overwriting the origin information is a bit brute force here. FIX THIS.
+
+        sf = traceback.extract_tb(sys.exc_info()[2])[-1] 
+        self.line       = sf.line
+        self.lineno     = sf.lineno
+        self.filename   = sf.filename
+                   
+    def message(self):
+        return "uncaught exception {RESULT}".format(
+            RESULT   = repr(self.exception)
+        )
+        
+    
+    def error(self):
+        return "{FILENAME}:{LINENO}: {MSG} at: {SOURCE}".format(
+            MSG      = self.message(),
+            FILENAME = self.filename,
+            LINENO   = self.lineno,
+            SOURCE   = self.line
+        )
+    
+    
     
 class ResultStatus ( object ):
     "Tokens that indicate the status of a test result: PASSED, FAILED, SKIPPED, IN_PROGRESS"
@@ -326,7 +360,7 @@ class Test (object):
                 
 
     def run(self):
-        print("\n=> running test: {name} ... ".format(name=self.basename), file=sys.stderr, end=" ")
+        print("=> running test: {name} ... ".format(name=self.basename), file=sys.stderr, end=" ")
 
         control = self.new_control()
         try:            
@@ -336,19 +370,23 @@ class Test (object):
             control.result.record_failure(ex)
         except Exception  as ex:
             # TODO: Log exception here ...
-            failure = UnexpectedException( self.test, ex, frame_index = -1 )
+            failure = UncaughtException( self.test, ex, frame_index = -1 )
             #
             # TODO: This must go into extra exception class. Must show backtrace of the exception caught and raise location.
             #            
             control.result.record_error(failure)
-
+            print ( str(control.result), file=sys.stderr )
+            print ( control.result.error(), file=sys.stderr, end="\n\n" )            
+            traceback.print_exc(file=sys.stderr)            
+            return control.result
+        
         assert (   control.result.status == TestResult.PASSED
                 or control.result.status == TestResult.FAILED
                 or control.result.status == TestResult.ERROR )
 
         print ( str(control.result), file=sys.stderr )
         if not control.result.status == TestResult.PASSED:        
-            print ( control.result.error(), file=sys.stderr )
+            print ( control.result.error(), file=sys.stderr, end="\n\n" )
         return control.result
 
         # should be more ...
@@ -364,7 +402,7 @@ class Tests ( object, metaclass = TestsuiteMeta ):
         print(file=sys.stderr)
         print("=> Preparing suite {name}, {N} test(s) ...".format(N=len(self.__tests__),name=self.name()), file=sys.stderr, end=" ")
         self.__tests__ = [ Test(self,test) for test in self.__tests__ ]
-        
+        print("",file=sys.stderr)
         # still need to work on the expectation interface, though.
         # process stuff in __tests__ (actually: Just bind the test methods
         pass # setup run, but don't run yet.
@@ -565,7 +603,7 @@ def execute_suites_and_report():
     s = execute_suites()
     print("\n---", file=sys.stderr)
     s.print(file=sys.stderr)
-    if s.failed == 0 and s.errors == 0 and self.failed_preparations == 0:
+    if s.failed == 0 and s.errors == 0 and s.preparations_failed == 0:
         exit(0)        
     else:
         print("\n*** TESTS FAILED OR CRASHED ***", file=sys.stderr)

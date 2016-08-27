@@ -1,0 +1,93 @@
+#   -*- mode: python -*-
+#
+#   Greenland -- a Python based scripting environment.
+#   Copyright (C) 2015,2016  M E Leypold.
+#
+#   This program is free software; you can redistribute it and/or
+#   modify it under the terms of the GNU General Public License as
+#   published by the Free Software Foundation; either version 2 of the
+#   License, or (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#   General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+#   02110-1301 USA.
+
+
+""" Tests for greenland.argvparsing
+"""
+
+from  greenland.testing2    import *
+from  greenland.argvparsing import *
+
+@suite
+class Basic(Tests):
+    
+    @test
+    def opts ( self, expect, **more ):
+
+        p = Options.compile( aliases = { 'size':'s', 'baz':['b','bah'] },
+                             types   = { 'size':int },
+                             flags   = ['bar']
+        )
+
+        def check_table( *table ):
+            for row in table:
+                expect ( lambda: p(row[0]) ) .returns ( (row[1],row[2]) )
+
+        check_table (
+            ( [],         {}, [] ),
+            ( [ "--foo=baal", "--baz", "--bar",   "more"     ], {'foo':'baal','baz':True,'bar':True}, ["more"] ),
+            ( [ "--foo=baal", "--baz", "--bar"               ], {'foo':'baal','baz':True,'bar':True}, []       ),
+            ( [ "-foo","baal", "-s"  , "100", "-bar", "more" ], {'foo':'baal','size':100,'bar':True}, ["more"] ),
+            ( [ "-foo","baal", "-s"  , "100", "-bar"         ], {'foo':'baal','size':100,'bar':True}, []       ),
+            ( [ "-foo","baal", "--", "-s", "100", "-bar"     ], {'foo':'baal' }                     , ["-s", "100", "-bar"]),
+        )
+
+    @test
+    def special_opts ( self, expect, **more ):
+
+        def check_table ( table, aliases = {}, types = {} ):
+            for row in table:
+                expect(lambda: SpecialOptions.collect(row[0],aliases=aliases,types=types)) .returns(row[1])
+
+        check_table (
+            [ [  ["+foo","+size=100","+baz","more"],   ({ 'foo' : True, 'size':'100', 'baz':True }, ["more"])  ],
+              [  ["+foo","+size=100","+baz"],          ({ 'foo' : True, 'size':'100', 'baz':True }, [])        ],
+              [  ["more"],                             ({ },                                        ["more"])  ],
+              [  [],                                   ({ },                                        [])        ],
+            ])
+
+        check_table ( aliases = { 'size':'s', 'baz':['b','bah'] }, types = { 'size':int }, table =
+            [ [  ["+foo","+s=100","+b","more"],        ({ 'foo' : True, 'size':100, 'baz':True }, ["more"])  ],
+              [  ["+foo","+s=100","+bah"],             ({ 'foo' : True, 'size':100, 'baz':True }, [])        ],
+              [  ["more"],                             ({ },                                        ["more"])  ],
+              [  [],                                   ({ },                                        [])        ],
+            ])
+
+
+    @test
+    def posargs( self, expect, **more ):
+
+        p = PosArgs.compile(['eins','zwei'], more = True )
+
+        def check_table( *table ):
+            for row in table:
+                expect ( lambda: p(row[0]) ) .returns ( (row[1],row[2]) )        
+
+        p([]) # ?
+                
+        check_table (
+            ( [],                       {},     [] ),                                  # XXX should raise proper, doesn't (getting KeyError)
+            ( ["1","2"],                {'eins': '1', 'zwei': ['2']},     [] ),
+            ( ["1","2","3"],            {'eins': '1', 'zwei': ['2','3']}, [] ),
+            ( ["1","2","--","3","4"],   {'eins': '1', 'zwei': ['2']},     ['3','4'] ),
+            # ( ["--","2","3","4"],     {},                               ['3','4'] ), # XXX does not fly but improper backtrace
+        )
+        
+if __name__ == '__main__': execute_suites_and_report()

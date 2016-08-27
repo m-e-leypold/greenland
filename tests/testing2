@@ -37,6 +37,12 @@ class  Basic( Tests ):
         expect ( lambda : 5*5 ) .returns (25)
         expect ( lambda : 3*5 ) .returns (15)
 
+    @test
+    def even_more(self,expect,test):
+        expect ( lambda : 5*5 ) .returns (25)
+        expect ( lambda : 3*5 ) .returns (15)        
+        raise Exception()
+        
         
 class FroomError(Exception):
     pass

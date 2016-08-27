@@ -1,0 +1,55 @@
+#   -*- mode: python -*-
+#
+#   Greenland -- a Python based scripting environment.
+#   Copyright (C) 2015,2016  M E Leypold.
+#
+#   This program is free software; you can redistribute it and/or
+#   modify it under the terms of the GNU General Public License as
+#   published by the Free Software Foundation; either version 2 of the
+#   License, or (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#   General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+#   02110-1301 USA.
+
+
+""" Tests for greenland.argvparsing
+"""
+
+from  greenland.testing2           import *
+from  greenland.regulardefinitions import *
+
+
+@suite
+class Basic(Tests):
+    
+    @test
+    def demo(self,expect,**more):
+
+        rx,ex = regular_definitions()
+
+        ex.DIGS2 = "[0-9]{2}"
+        ex.DIGS4 = "[0-9]{4}"
+
+        rx.YEAR  = "{{DIGS4}}"
+        rx.MONTH = "{{DIGS2}}", int
+        rx.DAY   = "{{DIGS2}}", int
+
+        rx.DATE  = "{{YEAR}}-{{MONTH}}-{{DAY}}"
+
+        date = rx.DATE.match("2014-09-13")
+    
+        expect( lambda: date.fields ) \
+            .returns ( {'DATE': '2014-09-13', 'YEAR': '2014', 'MONTH': 9, 'DAY': 13} )
+
+        expect( lambda: date.YEAR  ) .returns( "2014" )
+        expect( lambda: date.MONTH ) .returns( 9      )
+        expect( lambda: date.DAY )   .returns( 13     )
+                
+if __name__ == '__main__': execute_suites_and_report()
