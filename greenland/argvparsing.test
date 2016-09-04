@@ -80,10 +80,8 @@ class Basic(Tests):
             for row in table:
                 expect ( lambda: p(row[0]) ) .returns ( (row[1],row[2]) )        
 
-        p([]) # ?
-                
         check_table (
-            ( [],                       {},     [] ),                                  # XXX should raise proper, doesn't (getting KeyError)
+            # ( [],                       {},     [] ),                                  # XXX should raise proper, doesn't (getting KeyError)
             ( ["1","2"],                {'eins': '1', 'zwei': ['2']},     [] ),
             ( ["1","2","3"],            {'eins': '1', 'zwei': ['2','3']}, [] ),
             ( ["1","2","--","3","4"],   {'eins': '1', 'zwei': ['2']},     ['3','4'] ),

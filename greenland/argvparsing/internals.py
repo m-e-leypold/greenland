@@ -1,4 +1,4 @@
-<#
+#
 #   Greenland -- a Python based scripting environment.
 #   Copyright (C) 2015,2016  M E Leypold.
 #
