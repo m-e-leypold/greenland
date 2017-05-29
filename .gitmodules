@@ -1,0 +1,12 @@
+[submodule "META"]
+	path = META
+	url = ./
+	branch = META
+[submodule "Seedlings"]
+	path = Seedlings
+	url = ./
+	branch = Seedlings/dev/master
+[submodule "Sketches"]
+	path = Sketches
+	url = ./
+	branch = Sketches/master

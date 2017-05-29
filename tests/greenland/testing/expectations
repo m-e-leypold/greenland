@@ -1,0 +1,263 @@
+#!/usr/bin/env python3
+#
+#   Greenland -- a Python based scripting environment.
+#   Copyright (C) 2015-2017  M E Leypold.
+#
+#   This program is free software; you can redistribute it and/or
+#   modify it under the terms of the GNU General Public License as
+#   published by the Free Software Foundation; either version 2 of the
+#   License, or (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#   General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+#   02110-1301 USA.
+
+import tests.local
+
+from   greenland.testing.expectations import \
+    Recorder, Expectee,                      \
+    UnexpectedResult, MissingException,      \
+    UnexpectedException, WrongException, ExceptionConstraintViolation
+
+# * --- Test Infrastructure
+# ** -- This is a simple test
+
+from   greenland.testing.simple \
+    import test
+
+# ** -- The fake Framework
+
+def expect(what,recorder=None):
+    if not recorder:
+        recorder = Recorder()
+    return Expectee(what,recorder)
+
+# ** -- Things about which we want to write expectations
+
+def double(x):
+    return(2*x)
+
+class SomeThing(Exception): pass
+class AnotherThing(Exception): pass
+
+def raise_something(some=True):
+    if some:
+        raise SomeThing("SomeThing")
+    else:
+        raise AnotherThing("AnotherThing")
+    return 1234
+    
+# * --- Functional Tests
+# ** -- 'returns' Expectations 
+
+test.check.raises_not (
+    lambda:  expect( lambda: double(5) ) .returns (10)
+    #        -----------------------------------------
+    #
+    # The 'returns' method of an Expectee is the way how we have to
+    # write test assertions for function calls: An explicit lambda to
+    # suspend the call so the framework can actually do the call.
+)
+
+test.check.raises (
+    
+    lambda: expect( lambda: double(5) ) .returns (11),
+    #       -----------------------------------------
+    #
+    #       see above.
+    
+    raises     = UnexpectedResult,
+    satisfying = lambda ex: ex.actual == 10 and ex.expected == 11
+    
+    # If a :py:`returns` expectation fails, an exception of class
+    # :py:class:`UnexpectedResult` is raised with two attributes: The
+    # actually returned value :py:`actual` and the expected return
+    # value :py:`expected`.
+)
+
+test.check.raises_not (    
+    lambda:
+
+    expect( lambda x : x*x ) .returning ({
+        5 : 25,
+        7 : 49
+    })
+
+    # Multiple :py:`returns` expectations can be written as a table,
+    # too, by using the :py:`returning` method. Effectively this will
+    # call :py:`returns` for every key value pair in the table.
+)
+
+test.check.raises (
+    
+    lambda: expect( raise_something ) .returns (11),
+    #       ----------------------------------------
+    #
+    #       see above.
+    
+    raises     = UnexpectedException,
+    satisfying = lambda ex: ex.expected == 11 and type(ex.actual) == SomeThing
+
+    # A :py:`returns` expectation on an object that raises instead of
+    # returning a value will raise a :py:`UnexpectedException` with
+    # the expected return value as attribute :py:`expected` and the
+    # actually raised exception as the :py:`actual` attribute.
+)
+
+
+# ** -- `raises` Expectations.
+
+test.check.raises_not (
+    
+    lambda: expect( lambda: raise_something() ) .raises (SomeThing),
+    #       ----------------------------------------
+    #    
+    # The :py:`raises` method is the way how we have to write test
+    # assertions for expressions of which we expect that they raise
+    # assertions. Again note the lambda to suspend evaluation when
+    # creating the :py:`Expectee`.
+)
+
+
+test.check.raises (
+    
+    lambda: expect( lambda: double(5) ) .raises (SomeThing),
+    #       ----------------------------------------
+    #
+    #       see above.
+    
+    raises     = MissingException,
+    satisfying = lambda ex: ex.expected == SomeThing and ex.actual == 10
+    
+    # A :py:`raises` expectation on an object that does not raise and
+    # returns a value instead will raise a
+    # :py:class:`MissingException` with the expected exception as
+    # attribute :py:`expected` and the actually rreturned value as as
+    # the :py:`actual` attribute.    
+)
+
+
+test.check.raises (
+    
+    lambda: expect( lambda: raise_something(some=False) ) .raises (SomeThing),
+    #       ----------------------------------------
+    #
+    #       see above.
+    
+    raises     = WrongException,
+    satisfying = lambda ex: ex.expected == SomeThing and type(ex.actual) == AnotherThing
+
+    # If an object raises a different exception from what that has
+    # been expected, a WrongException will be raised, with the
+    # expected exception class as attribute :py:`expected` and the
+    # actually raised exception instance as attribute :py:`expected`.
+)
+
+
+def constraint (ex): return False
+
+test.check.raises (
+    
+    lambda: expect( lambda: raise_something() ) .raises ( SomeThing, satisfying = constraint ),
+    #       ----------------------------------------
+    #
+    #       see above.
+    
+    raises     = ExceptionConstraintViolation,
+    satisfying = lambda ex: ex.expected == SomeThing and ex.constraint == constraint
+    
+    # Reporting of :py:`expected` does not really make much sense for
+    # constraint violations: If a constraint violation is found,
+    # :py:`type(actual)` is :py:`expected`. In this case an
+    # :py:class:`ExceptionConstraintViolation` is reported which has
+    # the exception raised as attribute :py:`actual` and the
+    # constraint violated as attribute :py:`constraint`. The latter is
+    # also of limited usability, since the callable in question might
+    # not have a meaningful representation.    
+)
+
+
+test.check.raises_not (    
+    lambda:
+
+    expect( lambda x: raise_something(x) ) .raising ({
+        
+        True  : SomeThing,
+        False : AnotherThing
+    })
+
+    # Multiple :py:`raises` expectations can be written as a table,
+    # too, by using the :py:`raising` method. Effectively this will
+    # call :py:`raises` for every key value pair in the table.
+    #
+    # Currently there is no way to specify a constraint in such a
+    # table.
+)
+
+
+# ** -- odds and ends
+
+ex = None
+
+try:
+    expect( lambda: raise_something() ) .raises ( SomeThing, satisfying = constraint )
+except Exception as x:
+    ex = x
+
+
+test.check.raises_not (
+    lambda: str(ex)
+)
+
+# * --- Doghouse
+
+exit()  # XXX cont here with various tests, first the good case, then the bad case for every piece of vocabulary
+
+expect( lambda x : x*x ) .returning \
+({
+    5 : 25,
+    7 : 49
+})
+
+
+
+expect (raise_something) .returns (1)
+
+expect( raise_something ) .raising ({
+    True:   AnotherThing,
+    False:  AnotherThing
+})
+
+# Note: Syntax is slightly baroque here. Can we do better?
+
+
+# expect (raise_something) .raises  (SomeThing,satisfying=lambda ex: False )
+
+expect (raise_something) .raises  (AnotherThing)
+expect (lambda : 5)      .returns (5)
+
+expect (lambda : 5)      .returns (8)
+
+print("----")
+
+
+test.check.raises( lambda: expect( lambda: double(5) ) .returns (1), Foo )
+
+
+
+
+
+
+# TODO: alternate syntax?
+#
+# @check.raises( UnexpectedResult,
+#                 satisfying = lambda ex: ex.actual == 10 and ex.expected == 11
+# )
+# def my_good_case():
+#     expect( lambda: double(5) ) .returns (11)

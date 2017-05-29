@@ -1,0 +1,40 @@
+Greenland -- a Python based scripting environment.
+Copyright (C) 2015-2017  M E Leypold
+
+
+Licenses
+========
+
+The program is licensed under the GPL, version 3 (see file
+GPL-3.txt). Documentation is licensed under the FDL, version 1.3 (see
+file doc/FDL-1.3.tyt).
+
+Program
+-------
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at
+your option) any later version.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+Documentation
+-------------
+
+Copyright (c) 2017 M E Leypold.  Permission is granted to copy,
+distribute and/or modify the documentation for "Greenland" under the
+terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, no Front-Cover Texts, and no Back-Cover Texts.  A copy of
+the license is included in the documentation in the section entitled
+"GNU Free Documentation License".
+
+

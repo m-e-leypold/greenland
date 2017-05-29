@@ -1,0 +1,57 @@
+#!/usr/bin/env python3
+#
+#   Greenland -- a Python based scripting environment.
+#   Copyright (C) 2015-2017  M E Leypold.
+#
+#   This program is free software; you can redistribute it and/or
+#   modify it under the terms of the GNU General Public License as
+#   published by the Free Software Foundation; either version 2 of the
+#   License, or (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#   General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+#   02110-1301 USA.
+
+from greenland.example import *
+from greenland.errors  import Error
+
+class SomeError(Error):
+    message = "Some error happened, severity={baz}"
+
+    help    = """
+              This message is raised when some error happens.
+              The value of baz (here: {baz}) indicates the
+              level of severity.
+              """
+
+    info    = """
+              foo: {foo}
+              baz: {baz}
+              """
+
+raise SomeError(foo=123,baz=456)
+
+# Expected output like the following:
+#
+#    $ ./basic
+#
+#    Traceback (most recent call last):
+#      File "./basic", line 19, in <module>
+#        raise SomeError(foo=123,baz=456)
+#    __main__.SomeError: Some error happened, severity=456
+#
+#    ./basic:19: SomeError: Some error happened, severity=456
+#
+#      foo: 123
+#      baz: 456
+#
+#      This message is raised when some error happens.
+#      The value of baz (here: 456) indicates the
+#      level of severity.
+
